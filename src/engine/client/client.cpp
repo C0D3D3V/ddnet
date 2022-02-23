@@ -910,6 +910,7 @@ void CClient::DummyConnect()
 
 	g_Config.m_ClDummyCopyMoves = 0;
 	g_Config.m_ClDummyHammer = 0;
+	g_Config.m_ClDummyAim = 0;
 
 	//connecting to the server
 	m_NetClient[CONN_DUMMY].Connect(&m_ServerAddress);

@@ -401,6 +401,16 @@ int CGameClient::OnSnapInput(int *pData, bool Dummy, bool Force)
 			return 0;
 		}
 
+		if(g_Config.m_ClDummyAim)
+		{
+			vec2 Main = m_LocalCharacterPos;
+			vec2 Dummy = m_aClients[m_LocalIDs[!g_Config.m_ClDummy]].m_Predicted.m_Pos;
+			vec2 Dir = Main - Dummy;
+			m_DummyInput.m_TargetX = (int)(Dir.x);
+			m_DummyInput.m_TargetY = (int)(Dir.y);
+
+		}
+
 		mem_copy(pData, &m_DummyInput, sizeof(m_DummyInput));
 		return sizeof(m_DummyInput);
 	}
@@ -428,7 +438,8 @@ int CGameClient::OnSnapInput(int *pData, bool Dummy, bool Force)
 
 		mem_copy(pData, &m_HammerInput, sizeof(m_HammerInput));
 		return sizeof(m_HammerInput);
-	}
+	} 
+
 }
 
 void CGameClient::OnConnected()
