@@ -84,6 +84,7 @@ class CChat : public CComponent
 	{
 		int ClientID;
 		int Score;
+		bool Prioritize;
 	};
 	RateablePlayer m_aPlayerCompletionList[MAX_CLIENTS];
 	int m_PlayerCompletionListLength;
