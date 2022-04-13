@@ -201,3 +201,19 @@ MACRO_CONFIG_INT(DbgDummies, dbg_dummies, 0, 0, 15, CFGFLAG_SERVER, "(Debug buil
 MACRO_CONFIG_INT(DbgFocus, dbg_focus, 0, 0, 1, CFGFLAG_CLIENT, "")
 MACRO_CONFIG_INT(DbgTuning, dbg_tuning, 0, 0, 1, CFGFLAG_CLIENT, "")
 #endif
+
+
+//KRV Client
+MACRO_CONFIG_INT(ClShowFrozenText, krvc_frozen_tees_text, 0, 0, 2, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show how many tees in your team are currently frozen. (0 - off, 1 - show alive, 2 - show frozen)")
+MACRO_CONFIG_INT(ClNotifyWhenLast, krvc_last_notify, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Notify when you are last")
+MACRO_CONFIG_INT(ClHideTarget, krvc_hidetarget, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Hide target")
+MACRO_CONFIG_INT(ClToogleTargetLimits, krvc_toogletarget, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Remove the limits of the target")
+MACRO_CONFIG_INT(ClSpinBot, krvc_spinbot, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Spinbot")
+MACRO_CONFIG_INT(ClSpinBotSpeed, krvc_spinbot_speed, 10, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Speed of spinbot")
+MACRO_CONFIG_INT(ClWhatsMyPing, krvc_ping, 0, 0, 9999, CFGFLAG_CLIENT, "")
+MACRO_CONFIG_INT(ClPingNameCircle, krvc_nameplate_ping_circle, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Shows a circle next to nameplate to indicate ping")
+MACRO_CONFIG_INT(ClPingNameCircleSize, krvc_nameplate_ping_circle_size, 5, 0, 15, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Circle ping size")
+MACRO_CONFIG_INT(ClShowHitbox, krvc_playerhitbox, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Shows player hitbox")
+MACRO_CONFIG_INT(ClShowHitboxLocal, krvc_playerhitboxlocal, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Shows player hitbox only on local player")
+MACRO_CONFIG_INT(ClFixKoGSpec, krvc_fixkogspec, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Shows spec players")
+MACRO_CONFIG_INT(ClFixKoGSpecNames, krvc_fixkogspecnames, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Shows spec players with names")

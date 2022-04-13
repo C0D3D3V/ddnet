@@ -34,6 +34,34 @@ void CNamePlates::RenderNameplate(
 	else
 		Position = mix(vec2(pPrevChar->m_X, pPrevChar->m_Y), vec2(pPlayerChar->m_X, pPlayerChar->m_Y), Client()->IntraGameTick(g_Config.m_ClDummy));
 
+	/*
+	float squareSize = 32.0;
+	ColorRGBA rgb = color_cast<ColorRGBA>(ColorHSLA(0.5f, 1.0f, 0.7f, 0.8f));
+
+	//SHOW HITBOX KRV Client
+	if(g_Config.m_ClShowHitbox)
+	{
+		Graphics()->TextureClear();
+		Graphics()->BlendNormal();
+		Graphics()->QuadsBegin();
+		Graphics()->SetColor(rgb);
+		IGraphics::CQuadItem QuadItem(Position.x - squareSize / 2, Position.y - squareSize / 2, squareSize, squareSize);
+		Graphics()->QuadsDrawTL(&QuadItem, 1);
+		Graphics()->QuadsEnd();
+	}
+
+	if(g_Config.m_ClShowHitboxLocal && pPlayerInfo->m_Local){
+
+		Graphics()->TextureClear();
+		Graphics()->BlendNormal();
+		Graphics()->QuadsBegin();
+		Graphics()->SetColor(rgb);
+		IGraphics::CQuadItem QuadItem(Position.x - squareSize / 2, Position.y - squareSize / 2, squareSize, squareSize);
+		Graphics()->QuadsDrawTL(&QuadItem, 1);
+		Graphics()->QuadsEnd();
+
+	}*/
+
 	RenderNameplatePos(Position, pPlayerInfo, 1.0f);
 }
 
@@ -61,9 +89,7 @@ void CNamePlates::RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pP
 		Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 		Graphics()->QuadsSetRotation(0);
 
-		const float ShowDirectionImgSize = 22.0f;
-		YOffset -= ShowDirectionImgSize;
-		vec2 ShowDirectionPos = vec2(Position.x - 11.0f, YOffset);
+        vec2 ShowDirectionPos = vec2(Position.x - 11.0f, YOffset - FontSize - 15.0f);
 
 		if(m_pClient->m_Snap.m_aCharacters[pPlayerInfo->m_ClientID].m_Cur.m_Direction == -1)
 		{
@@ -176,6 +202,19 @@ void CNamePlates::RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pP
 		{
 			YOffset -= FontSize;
 			TextRender()->RenderTextContainer(m_aNamePlates[ClientID].m_NameTextContainerIndex, &TColor, &TOutlineColor, Position.x - tw / 2.0f, YOffset);
+			
+			//circle ping KRV Client
+			if((g_Config.m_ClPingNameCircle || m_pClient->m_Scoreboard.Active()) && !(Client()->State() == IClient::STATE_DEMOPLAYBACK))
+			{
+				Graphics()->TextureClear();
+				Graphics()->QuadsBegin();
+				ColorRGBA rgb = color_cast<ColorRGBA>(ColorHSLA((300.0f - clamp(m_pClient->m_Snap.m_paPlayerInfos[ClientID]->m_Latency, 0, 300)) / 1000.0f, 1.0f, 0.5f, 0.8f));
+				Graphics()->SetColor(rgb);
+				float CircleSize = g_Config.m_ClPingNameCircleSize;
+				RenderTools()->DrawCircle(Position.x - tw / 2.0f - CircleSize, YOffset + FontSize / 2.0f + 1.4f, CircleSize, 24);
+				Graphics()->QuadsEnd();
+			}
+
 		}
 
 		if(g_Config.m_ClNameplatesClan)
@@ -332,18 +371,61 @@ void CNamePlates::OnRender()
 			continue;
 		}
 
-		if(m_pClient->m_aClients[i].m_SpecCharPresent)
+		if(m_pClient->m_aClients[i].m_SpecCharPresent || (g_Config.m_ClFixKoGSpec && g_Config.m_ClFixKoGSpecNames && m_pClient->m_aClients[i].m_Team == TEAM_SPECTATORS && !(m_pClient->IsOtherTeam(i))))
 		{
+			vec2 Pos = m_pClient->m_aClients[i].m_SpecChar;
+
+			if(g_Config.m_ClFixKoGSpec && g_Config.m_ClFixKoGSpecNames && m_pClient->m_aClients[i].m_Team == TEAM_SPECTATORS && !(m_pClient->IsOtherTeam(i)))
+				Pos = m_pClient->m_aClients[i].m_RenderPos;
+
 			RenderNameplatePos(m_pClient->m_aClients[i].m_SpecChar, pInfo, 0.4f, true);
 		}
 
 		// only render active characters
 		if(m_pClient->m_Snap.m_aCharacters[i].m_Active)
 		{
+			const CNetObj_Character *pPrevChar = &m_pClient->m_Snap.m_aCharacters[i].m_Prev;
+			const CNetObj_Character *pPlayerChar = &m_pClient->m_Snap.m_aCharacters[i].m_Cur;
+
 			RenderNameplate(
 				&m_pClient->m_Snap.m_aCharacters[i].m_Prev,
 				&m_pClient->m_Snap.m_aCharacters[i].m_Cur,
 				pInfo);
+
+			/*
+			//SHOW HITBOX KRV Client
+			int ClientID = pInfo->m_ClientID;
+			vec2 Position;
+			if(ClientID >= 0 && ClientID < MAX_CLIENTS)
+				Position = m_pClient->m_aClients[ClientID].m_RenderPos;
+			else
+				Position = mix(vec2(pPrevChar->m_X, pPrevChar->m_Y), vec2(pPlayerChar->m_X, pPlayerChar->m_Y), Client()->IntraGameTick(g_Config.m_ClDummy));
+
+			float squareSize = 31.6f;
+			ColorRGBA rgb = color_cast<ColorRGBA>(ColorHSLA(0.5f, 1.0f, 0.7f, 0.8f));
+			IGraphics::CQuadItem QuadItem(Position.x - squareSize / 2, Position.y - squareSize / 2, squareSize, squareSize);
+
+			if(g_Config.m_ClShowHitbox)
+			{
+				Graphics()->TextureClear();
+				Graphics()->BlendNormal();
+				Graphics()->QuadsBegin();
+				Graphics()->SetColor(rgb);
+				Graphics()->QuadsDrawTL(&QuadItem, 1);
+				Graphics()->QuadsEnd();
+			}
+
+			if(g_Config.m_ClShowHitboxLocal && pInfo->m_Local)
+			{
+
+				Graphics()->TextureClear();
+				Graphics()->BlendNormal();
+				Graphics()->QuadsBegin();
+				Graphics()->SetColor(rgb);
+				Graphics()->QuadsDrawTL(&QuadItem, 1);
+				Graphics()->QuadsEnd();
+
+			}*/
 		}
 	}
 }

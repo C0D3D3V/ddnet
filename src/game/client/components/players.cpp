@@ -28,6 +28,8 @@
 
 #include <base/color.h>
 
+class IConsole *m_pConsole;
+
 void CPlayers::RenderHand(CTeeRenderInfo *pInfo, vec2 CenterPos, vec2 Dir, float AngleOffset, vec2 PostRotOffset, float Alpha)
 {
 	vec2 HandPos = CenterPos + Dir;
@@ -307,7 +309,7 @@ void CPlayers::RenderHook(
 		RenderHand(&RenderInfo, Position, normalize(HookPos - Pos), -pi / 2, vec2(20, 0), Alpha);
 	}
 }
-
+float i = 0.0f;
 void CPlayers::RenderPlayer(
 	const CNetObj_Character *pPrevChar,
 	const CNetObj_Character *pPlayerChar,
@@ -352,11 +354,21 @@ void CPlayers::RenderPlayer(
 	}
 	float AttackTicksPassed = AttackTime * (float)SERVER_TICK_SPEED;
 
+	//Spinbot with speed KRV Client
 	float Angle;
 	if(Local && Client()->State() != IClient::STATE_DEMOPLAYBACK)
 	{
-		// just use the direct input if it's the local player we are rendering
-		Angle = angle(m_pClient->m_Controls.m_MousePos[g_Config.m_ClDummy]);
+		if(!g_Config.m_ClSpinBot)
+		{
+			// just use the direct input if it's the local player we are rendering
+			Angle = angle(m_pClient->m_Controls.m_MousePos[g_Config.m_ClDummy]);
+		}
+		else
+		{
+			i += 0.003f * g_Config.m_ClSpinBotSpeed;
+			Angle = i;
+		}
+
 	}
 	else
 	{
@@ -598,9 +610,9 @@ void CPlayers::RenderPlayer(
 
 		switch(Player.m_Weapon)
 		{
-		case WEAPON_GUN: RenderHand(&RenderInfo, p, Direction, -3 * pi / 4, vec2(-15, 4), Alpha); break;
-		case WEAPON_SHOTGUN: RenderHand(&RenderInfo, p, Direction, -pi / 2, vec2(-5, 4), Alpha); break;
-		case WEAPON_GRENADE: RenderHand(&RenderInfo, p, Direction, -pi / 2, vec2(-4, 7), Alpha); break;
+			case WEAPON_GUN: RenderHand(&RenderInfo, p, Direction, -3 * pi / 4, vec2(-15, 4), Alpha); break;
+			case WEAPON_SHOTGUN: RenderHand(&RenderInfo, p, Direction, -pi / 2, vec2(-5, 4), Alpha); break;
+			case WEAPON_GRENADE: RenderHand(&RenderInfo, p, Direction, -pi / 2, vec2(-4, 7), Alpha); break;
 		}
 	}
 
@@ -759,15 +771,33 @@ void CPlayers::OnRender()
 		RenderHook(&pLocalClientData->m_RenderPrev, &pLocalClientData->m_RenderCur, &m_aRenderInfo[LocalClientID], LocalClientID);
 	}
 
-	// render spectating players
-	for(auto &m_aClient : m_pClient->m_aClients)
+	// render spectating players + KRV Client
+	for(int ClientID = 0; ClientID < MAX_CLIENTS; ClientID++)
 	{
-		if(!m_aClient.m_SpecCharPresent)
+		auto &m_aClient = m_pClient->m_aClients[ClientID];
+
+		if(!IsPlayerInfoAvailable(ClientID))
 		{
 			continue;
 		}
-		RenderTools()->RenderTee(CAnimState::GetIdle(), &m_RenderInfoSpec, EMOTE_BLINK, vec2(1, 0), m_aClient.m_SpecChar);
+		if(!m_aClient.m_SpecCharPresent && !g_Config.m_ClFixKoGSpec)
+		{
+			continue;
+		}
+		
+		vec2 Pos;
+		if(g_Config.m_ClFixKoGSpec)
+			Pos = m_aClient.m_RenderPos;
+		else
+			Pos = m_aClient.m_SpecChar;
+
+		bool spec = false;
+		spec = (m_aClient.m_Team == TEAM_SPECTATORS || m_aClient.m_SpecCharPresent) && !(m_pClient->IsOtherTeam(ClientID));
+
+		if(spec)
+			RenderTools()->RenderTee(CAnimState::GetIdle(), &m_RenderInfoSpec, EMOTE_BLINK, vec2(1, 0), Pos);
 	}
+
 
 	// render everyone else's tee, then our own
 	for(int ClientID = 0; ClientID < MAX_CLIENTS; ClientID++)
@@ -789,6 +819,8 @@ void CPlayers::OnRender()
 	}
 	if(LocalClientID != -1 && m_pClient->m_Snap.m_aCharacters[LocalClientID].m_Active && IsPlayerInfoAvailable(LocalClientID))
 	{
+		if(m_pClient->m_Snap.m_pLocalInfo)
+			g_Config.m_ClWhatsMyPing = m_pClient->m_Snap.m_paPlayerInfos[LocalClientID]->m_Latency;
 		const CGameClient::CClientData *pLocalClientData = &m_pClient->m_aClients[LocalClientID];
 		RenderHookCollLine(&pLocalClientData->m_RenderPrev, &pLocalClientData->m_RenderCur, LocalClientID);
 		RenderPlayer(&pLocalClientData->m_RenderPrev, &pLocalClientData->m_RenderCur, &m_aRenderInfo[LocalClientID], LocalClientID);

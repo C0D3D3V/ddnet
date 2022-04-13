@@ -264,6 +264,7 @@ int CControls::SnapInput(int *pData)
 		m_InputData[g_Config.m_ClDummy].m_PlayerFlags = PLAYERFLAG_PLAYING;
 	}
 
+	//ping KRV Client
 	if(m_pClient->m_Scoreboard.Active())
 		m_InputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_SCOREBOARD;
 
@@ -525,13 +526,17 @@ void CControls::OnRender()
 		}
 	}
 
-	// update target pos
-	if(m_pClient->m_Snap.m_pGameInfoObj && !m_pClient->m_Snap.m_SpecInfo.m_Active)
-		m_TargetPos[g_Config.m_ClDummy] = m_pClient->m_LocalCharacterPos + m_MousePos[g_Config.m_ClDummy];
-	else if(m_pClient->m_Snap.m_SpecInfo.m_Active && m_pClient->m_Snap.m_SpecInfo.m_UsePosition)
-		m_TargetPos[g_Config.m_ClDummy] = m_pClient->m_Snap.m_SpecInfo.m_Position + m_MousePos[g_Config.m_ClDummy];
-	else
-		m_TargetPos[g_Config.m_ClDummy] = m_MousePos[g_Config.m_ClDummy];
+	//Hide target KRV Client
+	if(!g_Config.m_ClHideTarget)
+	{
+		// update target pos
+		if(m_pClient->m_Snap.m_pGameInfoObj && !m_pClient->m_Snap.m_SpecInfo.m_Active)
+			m_TargetPos[g_Config.m_ClDummy] = m_pClient->m_LocalCharacterPos + m_MousePos[g_Config.m_ClDummy];
+		else if(m_pClient->m_Snap.m_SpecInfo.m_Active && m_pClient->m_Snap.m_SpecInfo.m_UsePosition)
+			m_TargetPos[g_Config.m_ClDummy] = m_pClient->m_Snap.m_SpecInfo.m_Position + m_MousePos[g_Config.m_ClDummy];
+		else
+			m_TargetPos[g_Config.m_ClDummy] = m_MousePos[g_Config.m_ClDummy];
+	}
 }
 
 bool CControls::OnMouseMove(float x, float y)
@@ -552,7 +557,12 @@ bool CControls::OnMouseMove(float x, float y)
 	}
 
 	m_MousePos[g_Config.m_ClDummy] += vec2(x, y); // TODO: ugly
-	ClampMousePos();
+
+	//Remove target limit KRV Client
+	if(!g_Config.m_ClToogleTargetLimits)
+	{
+		ClampMousePos();
+	}
 
 	return true;
 }

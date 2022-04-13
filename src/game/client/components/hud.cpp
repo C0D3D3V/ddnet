@@ -578,6 +578,52 @@ void CHud::RenderTextInfo()
 		str_format(aBuf, sizeof(aBuf), "%d", Client()->GetPredictionTime());
 		TextRender()->Text(0, m_Width - 10 - TextRender()->TextWidth(0, 12, aBuf, -1, -1.0f), g_Config.m_ClShowfps ? 20 : 5, 12, aBuf, -1.0f);
 	}
+
+	//render team in freeze text and last notify KRV Client
+	if((g_Config.m_ClShowFrozenText > 0) || g_Config.m_ClNotifyWhenLast && GameClient()->m_GameInfo.m_EntitiesDDRace)
+	{
+		int NumInTeam = 0;
+		int NumFrozen = 0;
+		int LocalTeamID = m_pClient->m_Teams.Team(m_pClient->m_Snap.m_LocalClientID);
+		for(int i = 0; i < MAX_CLIENTS; i++)
+		{
+			if(!m_pClient->m_Snap.m_paPlayerInfos[i])
+				continue;
+
+			if(m_pClient->m_Teams.Team(i) == LocalTeamID)
+			{
+				NumInTeam++;
+				if(m_pClient->m_aClients[i].m_RenderCur.m_Weapon == 5)
+					NumFrozen++;
+			}
+		}
+
+		//Notify when last
+		if(g_Config.m_ClNotifyWhenLast)
+		{
+			if(NumInTeam > 1 && NumInTeam - NumFrozen == 1 && m_pClient->m_aClients[m_pClient->m_Snap.m_LocalClientID].m_RenderCur.m_Weapon != 5)
+			{
+				char aBuf[64];
+				str_format(aBuf, sizeof(aBuf), "Last One!");
+				TextRender()->TextColor(1, 0.5f, 1, 1);
+				TextRender()->Text(0, m_Width / 2 - TextRender()->TextWidth(0, 6, aBuf, -1, -1.0f) / 2, m_Height / 2 - 19, 6, aBuf, -1.0f);
+			}
+		}
+
+		//Show freeze text
+		char aBuf[64];
+		if(g_Config.m_ClShowFrozenText == 1)
+			str_format(aBuf, sizeof(aBuf), "%d / %d", NumFrozen, NumInTeam);
+
+		else if(g_Config.m_ClShowFrozenText == 2)
+			str_format(aBuf, sizeof(aBuf), "%d / %d", NumInTeam - NumFrozen, NumInTeam);
+
+		if(g_Config.m_ClShowFrozenText > 0)
+			TextRender()->TextColor(1, 1, 1, 1);
+			TextRender()->Text(0, m_Width / 2 - TextRender()->TextWidth(0, 10, aBuf, -1, -1.0f) / 2, 12, 10, aBuf, -1.0f);
+	}
+
+
 }
 
 void CHud::RenderConnectionWarning()

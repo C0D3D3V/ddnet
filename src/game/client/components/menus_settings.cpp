@@ -1774,7 +1774,8 @@ void CMenus::RenderSettings(CUIRect MainView)
 		Localize("Graphics"),
 		Localize("Sound"),
 		Localize("DDNet"),
-		Localize("Assets")};
+		Localize("Assets"),
+		("KRV Client")};
 
 	int NumTabs = (int)std::size(aTabs);
 	int PreviousPage = g_Config.m_UiSettingsPage;
@@ -1842,6 +1843,11 @@ void CMenus::RenderSettings(CUIRect MainView)
 		m_pBackground->ChangePosition(CMenuBackground::POS_SETTINGS_ASSETS);
 		RenderSettingsCustom(MainView);
 	}
+	else if(g_Config.m_UiSettingsPage == 10)
+	{
+		m_pBackground->ChangePosition(13);
+		RenderSettingsKRVClient(MainView);
+	}
 
 	if(m_NeedRestartUpdate)
 	{
@@ -1854,6 +1860,7 @@ void CMenus::RenderSettings(CUIRect MainView)
 
 	RenderColorPicker();
 }
+
 
 ColorHSLA CMenus::RenderHSLColorPicker(const CUIRect *pRect, unsigned int *pColor, bool Alpha)
 {
@@ -2890,4 +2897,108 @@ void CMenus::RenderSettingsDDNet(CUIRect MainView)
 		TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 #endif
+}
+
+
+void CMenus::RenderSettingsKRVClient(CUIRect MainView)
+{
+	static int s_CurTab = 0;
+
+	CUIRect Column, Section;
+
+	const float LineMargin = 20.0f;
+
+	MainView.VSplitLeft(MainView.w * 0.5, &MainView, &Column);
+
+	MainView.HSplitTop(30.0f, &Section, &MainView);
+	UI()->DoLabelScaled(&Section, ("KRV First Settings"), 20.0f, TEXTALIGN_LEFT);
+	MainView.VSplitLeft(5.0f, 0x0, &MainView);
+	MainView.HSplitTop(5.0f, 0x0, &MainView);
+
+	{
+		CUIRect CheckBoxRect, CheckBoxRect2;
+		MainView.HSplitTop(LineMargin, &CheckBoxRect, &MainView);
+		CheckBoxRect.VSplitMid(&CheckBoxRect, &CheckBoxRect2);
+		if(DoButton_CheckBox(&g_Config.m_ClShowFrozenText, Localize("Tees Left Alive Text"), g_Config.m_ClShowFrozenText >= 1, &CheckBoxRect))
+		{
+			g_Config.m_ClShowFrozenText = g_Config.m_ClShowFrozenText >= 1 ? 0 : 1;
+		}
+		if(g_Config.m_ClShowFrozenText)
+		{
+			static int s_CountFrozenText = 0;
+			if(DoButton_CheckBox(&s_CountFrozenText, Localize("Count Alive Tees"), g_Config.m_ClShowFrozenText == 2, &CheckBoxRect2))
+			{
+				g_Config.m_ClShowFrozenText = g_Config.m_ClShowFrozenText != 2 ? 2 : 1;
+			}
+		}
+	}
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNotifyWhenLast, ("Show when you are last in your team"), &g_Config.m_ClNotifyWhenLast, &MainView, LineMargin);
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClHideTarget, ("Disable aim sprite mouse attachment"), &g_Config.m_ClHideTarget, &MainView, LineMargin);
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClToogleTargetLimits, ("Remove the limits of the aim"), &g_Config.m_ClToogleTargetLimits, &MainView, LineMargin);
+
+	{
+		CUIRect CheckBoxRect, CheckBoxRect2;
+		MainView.HSplitTop(LineMargin, &CheckBoxRect, &MainView);
+		CheckBoxRect.VSplitMid(&CheckBoxRect, &CheckBoxRect2);
+		if(DoButton_CheckBox(&g_Config.m_ClSpinBot, Localize("SpinBot"), g_Config.m_ClSpinBot, &CheckBoxRect))
+		{
+			g_Config.m_ClSpinBot = g_Config.m_ClSpinBot ? 0 : 1;
+		}
+		if(g_Config.m_ClSpinBot)
+		{
+			CUIRect Button, Label;
+			MainView.HSplitTop(20.0f, &Button, &MainView);
+			Button.VSplitLeft(150.0f, &Label, &Button);
+			char aBuf[64];
+			str_format(aBuf, sizeof(aBuf), "%s: %i ", "SpinBot speed", g_Config.m_ClSpinBotSpeed);
+			UI()->DoLabelScaled(&Label, aBuf, 14.0f, TEXTALIGN_LEFT);
+			g_Config.m_ClSpinBotSpeed = (int)(UIEx()->DoScrollbarH(&g_Config.m_ClSpinBotSpeed, &Button, g_Config.m_ClSpinBotSpeed / 100.0f) * 100.0f);
+	
+		}
+	}
+	{
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClPingNameCircle, ("Show ping colored circle before names"), &g_Config.m_ClPingNameCircle, &MainView, LineMargin);
+
+		CUIRect Button, Label;
+		MainView.HSplitTop(20.0f, &Button, &MainView);
+		Button.VSplitLeft(150.0f, &Label, &Button);
+		char aBuf[64];
+		str_format(aBuf, sizeof(aBuf), "%s: %i ", "Ping circle size", g_Config.m_ClPingNameCircleSize);
+		UI()->DoLabelScaled(&Label, aBuf, 14.0f, TEXTALIGN_LEFT);
+		g_Config.m_ClPingNameCircleSize = (int)(UIEx()->DoScrollbarH(&g_Config.m_ClPingNameCircleSize, &Button, g_Config.m_ClPingNameCircleSize / 15.0f) * 15.0f);
+	}
+	
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowHitbox, ("Show players hitbox"), &g_Config.m_ClShowHitbox, &MainView, LineMargin);
+	if(g_Config.m_ClShowHitbox)
+	{
+		g_Config.m_ClShowHitboxLocal = 0;
+	}
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowHitboxLocal, ("Show your player hitbox"), &g_Config.m_ClShowHitboxLocal, &MainView, LineMargin);
+	if(g_Config.m_ClShowHitboxLocal)
+	{
+		g_Config.m_ClShowHitbox = 0;
+	}
+
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClFixKoGSpec, ("Show player in spec mode"), &g_Config.m_ClFixKoGSpec, &MainView, LineMargin);
+	if(g_Config.m_ClFixKoGSpec)
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClFixKoGSpecNames, ("Show player the username in spec mode"), &g_Config.m_ClFixKoGSpecNames, &MainView, LineMargin);
+
+
+	{
+		CUIRect Button;
+		CUIRect ExtMenu;
+		MainView.VSplitLeft(0, 0, &ExtMenu);
+		ExtMenu.VSplitLeft(130.0f, &ExtMenu, 0);
+		ExtMenu.HSplitBottom(20.0f, &ExtMenu, &Button);
+		static int s_DiscordButton;
+		if(DoButton_Menu(&s_DiscordButton, Localize("Kio's Discord Server"), 0, &Button, 0, CUI::CORNER_ALL, 5.0f, 0.0f, vec4(0.0f, 0.0f, 0.0f, 0.8f), vec4(0.0f, 0.0f, 0.0f, 0.4f)))
+		{
+			if(!open_link("https://discord.gg/xsf3m6tdBJ"))
+			{
+				dbg_msg("menus", "couldn't open link");
+			}
+			m_DoubleClickIndex = -1;
+		}
+	}
+
 }
