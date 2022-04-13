@@ -580,7 +580,7 @@ void CHud::RenderTextInfo()
 	}
 
 	//render team in freeze text and last notify KRV Client
-	if((g_Config.m_ClShowFrozenText > 0) || g_Config.m_ClNotifyWhenLast && GameClient()->m_GameInfo.m_EntitiesDDRace)
+	if((g_Config.m_ClShowFrozenText > 0) || (g_Config.m_ClNotifyWhenLast && GameClient()->m_GameInfo.m_EntitiesDDRace))
 	{
 		int NumInTeam = 0;
 		int NumFrozen = 0;
@@ -619,8 +619,10 @@ void CHud::RenderTextInfo()
 			str_format(aBuf, sizeof(aBuf), "%d / %d", NumInTeam - NumFrozen, NumInTeam);
 
 		if(g_Config.m_ClShowFrozenText > 0)
+		{
 			TextRender()->TextColor(1, 1, 1, 1);
 			TextRender()->Text(0, m_Width / 2 - TextRender()->TextWidth(0, 10, aBuf, -1, -1.0f) / 2, 12, 10, aBuf, -1.0f);
+		}
 	}
 
 

@@ -946,16 +946,9 @@ void CMenus::GhostlistPopulate()
 
 CMenus::CGhostItem *CMenus::GetOwnGhost()
 {
-	try
-	{
-		for(int i = 0; i < m_lGhosts.size(); i++)
-			if(m_lGhosts[i].m_Own)
-				return &m_lGhosts[i];
-	}
-	catch(...)
-	{
-		throw;
-	}
+	for(int i = 0; i < m_lGhosts.size(); i++)
+		if(m_lGhosts[i].m_Own)
+			return &m_lGhosts[i];
 
 	return 0;
 }
