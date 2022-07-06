@@ -1288,6 +1288,23 @@ void CGameClient::OnNewSnapshot()
 				{
 					const void *pOld = Client()->SnapFindItem(IClient::SNAP_PREV, NETOBJTYPE_CHARACTER, Item.m_ID);
 					m_Snap.m_aCharacters[Item.m_ID].m_Cur = *((const CNetObj_Character *)pData);
+
+					if(Item.m_ID == m_Snap.m_LocalClientID)
+					{
+						const void *pNew = &m_Snap.m_aCharacters[Item.m_ID].m_Cur;
+						if(mem_comp(pNew, pOld, sizeof(CNetObj_Character)) != 0)
+						{
+							Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "client", "CNetObj_Character changed");
+							for(unsigned IdxValue = 0; IdxValue < sizeof(CNetObj_Character) / sizeof(int); IdxValue++)
+								if(((int *)pOld)[IdxValue] != ((int *)pNew)[IdxValue])
+								{
+									char aBuf[256];
+									str_format(aBuf, sizeof(aBuf), "	%d %d %d", IdxValue, ((int *)pOld)[IdxValue], ((int *)pNew)[IdxValue]);
+									Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "client", aBuf);
+								}
+						}
+					}
+
 					m_aClients[Item.m_ID].m_Predicted.ReadCharacter((const CNetObj_Character *)pData);
 					if(pOld)
 					{
