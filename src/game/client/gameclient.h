@@ -31,7 +31,6 @@
 #include "components/effects.h"
 #include "components/emoticon.h"
 #include "components/flow.h"
-#include "components/freezebars.h"
 #include "components/ghost.h"
 #include "components/hud.h"
 #include "components/items.h"
@@ -44,6 +43,7 @@
 #include "components/motd.h"
 #include "components/nameplates.h"
 #include "components/particles.h"
+#include "components/player_bars.h"
 #include "components/players.h"
 #include "components/race_demo.h"
 #include "components/scoreboard.h"
@@ -134,7 +134,7 @@ public:
 
 	CPlayers m_Players;
 	CNamePlates m_NamePlates;
-	CFreezeBars m_FreezeBars;
+	CPlayerBars m_FreezeBars;
 	CItems m_Items;
 	CMapImages m_MapImages;
 
@@ -531,7 +531,6 @@ public:
 	void LoadGameSkin(const char *pPath, bool AsDir = false);
 	void LoadEmoticonsSkin(const char *pPath, bool AsDir = false);
 	void LoadParticlesSkin(const char *pPath, bool AsDir = false);
-	void LoadHudSkin(const char *pPath, bool AsDir = false);
 	void LoadExtrasSkin(const char *pPath, bool AsDir = false);
 
 	void RefindSkins();
@@ -658,14 +657,10 @@ public:
 		IGraphics::CTextureHandle m_SpriteHudEndlessJump;
 		IGraphics::CTextureHandle m_SpriteHudEndlessHook;
 		IGraphics::CTextureHandle m_SpriteHudJetpack;
-		IGraphics::CTextureHandle m_SpriteHudFreezeBarFullLeft;
 		IGraphics::CTextureHandle m_SpriteHudFreezeBarFull;
 		IGraphics::CTextureHandle m_SpriteHudFreezeBarEmpty;
-		IGraphics::CTextureHandle m_SpriteHudFreezeBarEmptyRight;
-		IGraphics::CTextureHandle m_SpriteHudNinjaBarFullLeft;
 		IGraphics::CTextureHandle m_SpriteHudNinjaBarFull;
 		IGraphics::CTextureHandle m_SpriteHudNinjaBarEmpty;
-		IGraphics::CTextureHandle m_SpriteHudNinjaBarEmptyRight;
 		IGraphics::CTextureHandle m_SpriteHudHookHitDisabled;
 		IGraphics::CTextureHandle m_SpriteHudHammerHitDisabled;
 		IGraphics::CTextureHandle m_SpriteHudShotgunHitDisabled;
@@ -680,19 +675,20 @@ public:
 		IGraphics::CTextureHandle m_SpriteHudPracticeMode;
 		IGraphics::CTextureHandle m_SpriteHudDummyHammer;
 		IGraphics::CTextureHandle m_SpriteHudDummyCopy;
+		IGraphics::CTextureHandle m_SpriteHudAirjumpDisabled;
 	};
 
 	SClientHudSkin m_HudSkin;
 	bool m_HudSkinLoaded;
 
-	struct SClientExtrasSkin
+	struct SClientExtraParticlesSkin
 	{
 		IGraphics::CTextureHandle m_SpriteParticleSnowflake;
 		IGraphics::CTextureHandle m_aSpriteParticles[1];
 	};
 
-	SClientExtrasSkin m_ExtrasSkin;
-	bool m_ExtrasSkinLoaded;
+	SClientExtraParticlesSkin m_ExtraParticlesSkin;
+	bool m_ExtraParticlesSkinLoaded;
 
 	const std::vector<CSnapEntities> &SnapEntities() { return m_vSnapEntities; }
 

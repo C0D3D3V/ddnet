@@ -1281,7 +1281,6 @@ set(EXPECTED_DATA
   gui_cursor.png
   gui_icons.png
   gui_logo.png
-  hud.png
   languages/arabic.txt
   languages/belarusian.txt
   languages/bosnian.txt
@@ -2025,8 +2024,6 @@ if(CLIENT)
     components/emoticon.h
     components/flow.cpp
     components/flow.h
-    components/freezebars.cpp
-    components/freezebars.h
     components/ghost.cpp
     components/ghost.h
     components/hud.cpp
@@ -2057,6 +2054,8 @@ if(CLIENT)
     components/nameplates.h
     components/particles.cpp
     components/particles.h
+    components/player_bars.cpp
+    components/player_bars.h
     components/players.cpp
     components/players.h
     components/race_demo.cpp
