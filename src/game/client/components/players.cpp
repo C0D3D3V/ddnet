@@ -22,6 +22,7 @@
 #include "players.h"
 
 #include <base/color.h>
+#include <base/math.h>
 
 void CPlayers::RenderHand(CTeeRenderInfo *pInfo, vec2 CenterPos, vec2 Dir, float AngleOffset, vec2 PostRotOffset, float Alpha)
 {
@@ -410,22 +411,33 @@ void CPlayers::RenderPlayer(
 
 	bool Stationary = Player.m_VelX <= 1 && Player.m_VelX >= -1;
 	bool InAir = !Collision()->CheckPoint(Player.m_X, Player.m_Y + 16);
+	bool Running = Player.m_VelX <= -5000 || Player.m_VelX >= 5000;
 	bool WantOtherDir = (Player.m_Direction == -1 && Vel.x > 0) || (Player.m_Direction == 1 && Vel.x < 0);
 
 	// evaluate animation
 	float WalkTime = fmod(Position.x, 100.0f) / 100.0f;
+	float RunTime = fmod(Position.x, 250.0f) / 250.0f;
+
+	// Don't do a moon walk outside the left border
 	if(WalkTime < 0)
-	{
-		// Don't do a moon walk outside the left border
 		WalkTime += 1;
-	}
+	if(RunTime < 0)
+		RunTime += 1;
+
 	CAnimState State;
 	State.Set(&g_pData->m_aAnimations[ANIM_BASE], 0);
 
 	if(InAir)
 		State.Add(&g_pData->m_aAnimations[ANIM_INAIR], 0, 1.0f); // TODO: some sort of time here
 	else if(Stationary)
-		State.Add(&g_pData->m_aAnimations[ANIM_IDLE], 0, 1.0f); // TODO: some sort of time here
+	{
+		if(m_pClient->m_aClients[ClientID].m_Afk)
+			State.Add(Direction.x < 0 ? &g_pData->m_aAnimations[ANIM_SIT_LEFT] : &g_pData->m_aAnimations[ANIM_SIT_RIGHT], 0, 1.0f);
+		else
+			State.Add(&g_pData->m_aAnimations[ANIM_IDLE], 0, 1.0f); // TODO: some sort of time here
+	}
+	else if(Running)
+		State.Add(Player.m_VelX < 0 ? &g_pData->m_aAnimations[ANIM_RUN_LEFT] : &g_pData->m_aAnimations[ANIM_RUN_RIGHT], RunTime, 1.0f);
 	else if(!WantOtherDir)
 		State.Add(&g_pData->m_aAnimations[ANIM_WALK], WalkTime, 1.0f);
 
@@ -454,8 +466,27 @@ void CPlayers::RenderPlayer(
 	{
 		if(!(RenderInfo.m_TeeRenderFlags & TEE_NO_WEAPON))
 		{
+			// check if tee is being active before AFK
+			float Delay = 0.0f;
+
+			switch(Player.m_Weapon)
+			{
+			case WEAPON_HAMMER: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_HammerHitFireDelay / 1000.0f; break;
+			case WEAPON_GUN: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_GunFireDelay / 1000.0f; break;
+			case WEAPON_SHOTGUN: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_ShotgunFireDelay / 1000.0f; break;
+			case WEAPON_GRENADE: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_GrenadeFireDelay / 1000.0f; break;
+			case WEAPON_LASER: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_LaserFireDelay / 1000.0f; break;
+			case WEAPON_NINJA: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_NinjaFireDelay / 1000.0f; break;
+			default: Delay = 1.0f;
+			}
+
+			bool IsActive = !m_pClient->m_aClients[ClientID].m_Afk || LastAttackTime < Delay;
+
 			Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-			Graphics()->QuadsSetRotation(State.GetAttach()->m_Angle * pi * 2 + Angle);
+			if(IsActive)
+				Graphics()->QuadsSetRotation(State.GetAttach()->m_Angle * pi * 2 + Angle);
+			else
+				Graphics()->QuadsSetRotation(Direction.x < 0 ? 400.0f : 200.0f);
 
 			if(ClientID < 0)
 				Graphics()->SetColor(1.0f, 1.0f, 1.0f, 0.5f);
@@ -472,18 +503,30 @@ void CPlayers::RenderPlayer(
 			vec2 WeaponPosition;
 			if(Player.m_Weapon == WEAPON_HAMMER)
 			{
-				// Static position for hammer
-				WeaponPosition = Position + vec2(State.GetAttach()->m_X, State.GetAttach()->m_Y);
-				WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
-				// if attack is under way, bash stuffs
-				if(Direction.x < 0)
+				if(IsActive)
 				{
-					Graphics()->QuadsSetRotation(-pi / 2 - State.GetAttach()->m_Angle * pi * 2);
-					WeaponPosition.x -= g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsetx;
+					// Static position for hammer
+					WeaponPosition = Position + vec2(State.GetAttach()->m_X, State.GetAttach()->m_Y);
+					WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
+					// if attack is under way, bash stuffs
+					if(Direction.x < 0)
+					{
+						Graphics()->QuadsSetRotation(-pi / 2 - State.GetAttach()->m_Angle * pi * 2);
+						WeaponPosition.x -= g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsetx;
+					}
+					else
+					{
+						Graphics()->QuadsSetRotation(-pi / 2 + State.GetAttach()->m_Angle * pi * 2);
+					}
 				}
 				else
 				{
-					Graphics()->QuadsSetRotation(-pi / 2 + State.GetAttach()->m_Angle * pi * 2);
+					WeaponPosition = Position;
+					if(Dir.x < 0)
+						WeaponPosition.x += 7.0f;
+					else
+						WeaponPosition.x += -7.0f;
+					WeaponPosition.y -= 10.0f;
 				}
 				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
 			}
@@ -554,22 +597,34 @@ void CPlayers::RenderPlayer(
 			}
 			else
 			{
-				// TODO: should be an animation
-				Recoil = 0;
-				float a = AttackTicksPassed / 5.0f;
-				if(a < 1)
-					Recoil = sinf(a * pi);
-				WeaponPosition = Position + Dir * g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsetx - Dir * Recoil * 10.0f;
-				WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
-				if(Player.m_Weapon == WEAPON_GUN && g_Config.m_ClOldGunPosition)
-					WeaponPosition.y -= 8;
+				if(IsActive)
+				{
+					// TODO: should be an animation
+					Recoil = 0;
+					float a = AttackTicksPassed / 5.0f;
+					if(a < 1)
+						Recoil = sinf(a * pi);
+					WeaponPosition = Position + Dir * g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsetx - Dir * Recoil * 10.0f;
+					WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
+					if(Player.m_Weapon == WEAPON_GUN && g_Config.m_ClOldGunPosition)
+						WeaponPosition.y -= 8;
+				}
+				else
+				{
+					WeaponPosition = Position;
+					if(Dir.x < 0)
+						WeaponPosition.x += 7.0f;
+					else
+						WeaponPosition.x += -7.0f;
+					WeaponPosition.y -= 10.0f;
+				}
 				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
 			}
 
 			if(Player.m_Weapon == WEAPON_GUN || Player.m_Weapon == WEAPON_SHOTGUN)
 			{
 				// check if we're firing stuff
-				if(g_pData->m_Weapons.m_aId[CurrentWeapon].m_NumSpriteMuzzles) //prev.attackticks)
+				if(g_pData->m_Weapons.m_aId[CurrentWeapon].m_NumSpriteMuzzles) // prev.attackticks)
 				{
 					float AlphaMuzzle = 0.0f;
 					if(AttackTicksPassed < g_pData->m_Weapons.m_aId[CurrentWeapon].m_Muzzleduration + 3)
@@ -612,11 +667,14 @@ void CPlayers::RenderPlayer(
 			Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 			Graphics()->QuadsSetRotation(0);
 
-			switch(Player.m_Weapon)
+			if(IsActive)
 			{
-			case WEAPON_GUN: RenderHand(&RenderInfo, WeaponPosition, Direction, -3 * pi / 4, vec2(-15, 4), Alpha); break;
-			case WEAPON_SHOTGUN: RenderHand(&RenderInfo, WeaponPosition, Direction, -pi / 2, vec2(-5, 4), Alpha); break;
-			case WEAPON_GRENADE: RenderHand(&RenderInfo, WeaponPosition, Direction, -pi / 2, vec2(-4, 7), Alpha); break;
+				switch(Player.m_Weapon)
+				{
+				case WEAPON_GUN: RenderHand(&RenderInfo, WeaponPosition, Direction, -3 * pi / 4, vec2(-15, 4), Alpha); break;
+				case WEAPON_SHOTGUN: RenderHand(&RenderInfo, WeaponPosition, Direction, -pi / 2, vec2(-5, 4), Alpha); break;
+				case WEAPON_GRENADE: RenderHand(&RenderInfo, WeaponPosition, Direction, -pi / 2, vec2(-4, 7), Alpha); break;
+				}
 			}
 		}
 	}
@@ -810,7 +868,7 @@ void CPlayers::OnRender()
 
 		RenderHookCollLine(&m_pClient->m_aClients[ClientID].m_RenderPrev, &m_pClient->m_aClients[ClientID].m_RenderCur, ClientID);
 
-		//don't render offscreen
+		// don't render offscreen
 		vec2 *pRenderPos = &m_pClient->m_aClients[ClientID].m_RenderPos;
 		if(pRenderPos->x < ScreenX0 || pRenderPos->x > ScreenX1 || pRenderPos->y < ScreenY0 || pRenderPos->y > ScreenY1)
 		{
