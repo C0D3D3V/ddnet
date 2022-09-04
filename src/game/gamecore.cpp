@@ -63,7 +63,7 @@ int CTuningParams::PossibleTunings(const char *pStr, IConsole::FPossibleCallback
 	return Index;
 }
 
-float CTuningParams::GetWeaponFireDelay(int Weapon)
+float CTuningParams::GetWeaponFireDelay(int Weapon) const
 {
 	switch(Weapon)
 	{
@@ -73,7 +73,7 @@ float CTuningParams::GetWeaponFireDelay(int Weapon)
 	case WEAPON_GRENADE: return (float)m_GrenadeFireDelay / 1000.0f;
 	case WEAPON_LASER: return (float)m_LaserFireDelay / 1000.0f;
 	case WEAPON_NINJA: return (float)m_NinjaFireDelay / 1000.0f;
-	default: dbg_assert(false, "invalid weapon");
+	default: dbg_assert(false, "invalid weapon"); return 0.0f; // this value should not be reached
 	}
 }
 

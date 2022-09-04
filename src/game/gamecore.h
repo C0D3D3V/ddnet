@@ -66,7 +66,7 @@ public:
 	bool Get(const char *pName, float *pValue) const;
 	static const char *Name(int Index) { return ms_apNames[Index]; }
 	int PossibleTunings(const char *pStr, IConsole::FPossibleCallback pfnCallback = IConsole::EmptyPossibleCommandCallback, void *pUser = nullptr);
-	float GetWeaponFireDelay(int Weapon);
+	float GetWeaponFireDelay(int Weapon) const;
 };
 
 inline void StrToInts(int *pInts, int Num, const char *pStr)
