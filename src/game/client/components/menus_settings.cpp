@@ -2499,7 +2499,8 @@ enum
 	APPEARANCE_TAB_HOOK_COLLISION = 3,
 	APPEARANCE_TAB_KILL_MESSAGES = 4,
 	APPEARANCE_TAB_LASER = 5,
-	NUMBER_OF_APPEARANCE_TABS = 6,
+	APPEARANCE_TAB_ANIMATIONS = 6,
+	NUMBER_OF_APPEARANCE_TABS = 7,
 };
 
 void CMenus::RenderSettingsAppearance(CUIRect MainView)
@@ -2507,7 +2508,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 	char aBuf[128];
 	static int s_CurTab = 0;
 
-	CUIRect TabBar, Page1Tab, Page2Tab, Page3Tab, Page4Tab, Page5Tab, Page6Tab, LeftView, RightView, Section, Button, Label;
+	CUIRect TabBar, Page1Tab, Page2Tab, Page3Tab, Page4Tab, Page5Tab, Page6Tab, Page7Tab, LeftView, RightView, Section, Button, Label;
 
 	MainView.HSplitTop(20, &TabBar, &MainView);
 	float TabsW = TabBar.w;
@@ -2516,6 +2517,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 	Page3Tab.VSplitLeft(TabsW / NUMBER_OF_APPEARANCE_TABS, &Page3Tab, &Page4Tab);
 	Page4Tab.VSplitLeft(TabsW / NUMBER_OF_APPEARANCE_TABS, &Page4Tab, &Page5Tab);
 	Page5Tab.VSplitLeft(TabsW / NUMBER_OF_APPEARANCE_TABS, &Page5Tab, &Page6Tab);
+	Page6Tab.VSplitLeft(TabsW / NUMBER_OF_APPEARANCE_TABS, &Page6Tab, &Page7Tab);
 
 	static CButtonContainer s_aPageTabs[NUMBER_OF_APPEARANCE_TABS] = {};
 
@@ -2529,8 +2531,10 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		s_CurTab = APPEARANCE_TAB_HOOK_COLLISION;
 	if(DoButton_MenuTab(&s_aPageTabs[APPEARANCE_TAB_KILL_MESSAGES], Localize("Kill Messages"), s_CurTab == APPEARANCE_TAB_KILL_MESSAGES, &Page5Tab, 0, NULL, NULL, NULL, NULL, 4))
 		s_CurTab = APPEARANCE_TAB_KILL_MESSAGES;
-	if(DoButton_MenuTab(&s_aPageTabs[APPEARANCE_TAB_LASER], Localize("Laser"), s_CurTab == APPEARANCE_TAB_LASER, &Page6Tab, IGraphics::CORNER_R, NULL, NULL, NULL, NULL, 4))
+	if(DoButton_MenuTab(&s_aPageTabs[APPEARANCE_TAB_LASER], Localize("Laser"), s_CurTab == APPEARANCE_TAB_LASER, &Page6Tab, 0, NULL, NULL, NULL, NULL, 4))
 		s_CurTab = APPEARANCE_TAB_LASER;
+	if(DoButton_MenuTab(&s_aPageTabs[APPEARANCE_TAB_ANIMATIONS], Localize("Animations"), s_CurTab == APPEARANCE_TAB_ANIMATIONS, &Page7Tab, IGraphics::CORNER_R, NULL, NULL, NULL, NULL, 4))
+		s_CurTab = APPEARANCE_TAB_ANIMATIONS;
 
 	MainView.HSplitTop(10.0f, 0x0, &MainView); // Margin
 
@@ -2985,6 +2989,21 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		Section.Margin(SectionMargin, &Section);
 
 		DoLaserPreview(&Section, LaserOutlineColor, LaserInnerColor);
+	}
+	else if(s_CurTab == APPEARANCE_TAB_ANIMATIONS)
+	{
+		MainView.VSplitMid(&LeftView, &RightView);
+
+		// ***** Animations ***** //
+		LeftView.HSplitTop(HeadlineAndVMargin, &Label, &LeftView);
+		UI()->DoLabel(&Label, Localize("Animations"), HeadlineFontSize, TEXTALIGN_LEFT);
+
+		// General animation settings
+		LeftView.HSplitTop(SectionTotalMargin + 3 * LineSize, &Section, &LeftView);
+		Section.Margin(SectionMargin, &Section);
+
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowAfkState, Localize("Show AFK state"), &g_Config.m_ClShowAfkState, &Section, LineSize);
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowRunState, Localize("Show running state"), &g_Config.m_ClShowRunState, &Section, LineSize);
 	}
 }
 

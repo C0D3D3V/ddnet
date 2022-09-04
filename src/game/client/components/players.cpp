@@ -4,6 +4,7 @@
 #include <engine/demo.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
+#include <game/gamecore.h>
 #include <game/generated/client_data.h>
 #include <game/generated/protocol.h>
 
@@ -431,12 +432,12 @@ void CPlayers::RenderPlayer(
 		State.Add(&g_pData->m_aAnimations[ANIM_INAIR], 0, 1.0f); // TODO: some sort of time here
 	else if(Stationary)
 	{
-		if(m_pClient->m_aClients[ClientID].m_Afk)
+		if(m_pClient->m_aClients[ClientID].m_Afk && g_Config.m_ClShowAfkState)
 			State.Add(Direction.x < 0 ? &g_pData->m_aAnimations[ANIM_SIT_LEFT] : &g_pData->m_aAnimations[ANIM_SIT_RIGHT], 0, 1.0f);
 		else
 			State.Add(&g_pData->m_aAnimations[ANIM_IDLE], 0, 1.0f); // TODO: some sort of time here
 	}
-	else if(Running)
+	else if(Running && g_Config.m_ClShowRunState)
 		State.Add(Player.m_VelX < 0 ? &g_pData->m_aAnimations[ANIM_RUN_LEFT] : &g_pData->m_aAnimations[ANIM_RUN_RIGHT], RunTime, 1.0f);
 	else if(!WantOtherDir)
 		State.Add(&g_pData->m_aAnimations[ANIM_WALK], WalkTime, 1.0f);
@@ -467,20 +468,7 @@ void CPlayers::RenderPlayer(
 		if(!(RenderInfo.m_TeeRenderFlags & TEE_NO_WEAPON))
 		{
 			// check if tee is being active before AFK
-			float Delay = 0.0f;
-
-			switch(Player.m_Weapon)
-			{
-			case WEAPON_HAMMER: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_HammerHitFireDelay / 1000.0f; break;
-			case WEAPON_GUN: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_GunFireDelay / 1000.0f; break;
-			case WEAPON_SHOTGUN: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_ShotgunFireDelay / 1000.0f; break;
-			case WEAPON_GRENADE: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_GrenadeFireDelay / 1000.0f; break;
-			case WEAPON_LASER: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_LaserFireDelay / 1000.0f; break;
-			case WEAPON_NINJA: Delay = (float)m_pClient->m_aTuning[g_Config.m_ClDummy].m_NinjaFireDelay / 1000.0f; break;
-			default: Delay = 1.0f;
-			}
-
-			bool IsActive = !m_pClient->m_aClients[ClientID].m_Afk || LastAttackTime < Delay;
+			bool IsActive = !m_pClient->m_aClients[ClientID].m_Afk || LastAttackTime < m_pClient->m_aTuning[g_Config.m_ClDummy].GetWeaponFireDelay(Player.m_Weapon) || !g_Config.m_ClShowAfkState;
 
 			Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 			if(IsActive)
