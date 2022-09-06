@@ -432,12 +432,12 @@ void CPlayers::RenderPlayer(
 		State.Add(&g_pData->m_aAnimations[ANIM_INAIR], 0, 1.0f); // TODO: some sort of time here
 	else if(Stationary)
 	{
-		if(m_pClient->m_aClients[ClientID].m_Afk && g_Config.m_ClShowAfkState)
+		if(m_pClient->m_aClients[ClientID].m_Afk)
 			State.Add(Direction.x < 0 ? &g_pData->m_aAnimations[ANIM_SIT_LEFT] : &g_pData->m_aAnimations[ANIM_SIT_RIGHT], 0, 1.0f);
 		else
 			State.Add(&g_pData->m_aAnimations[ANIM_IDLE], 0, 1.0f); // TODO: some sort of time here
 	}
-	else if(Running && g_Config.m_ClShowRunState)
+	else if(Running)
 		State.Add(Player.m_VelX < 0 ? &g_pData->m_aAnimations[ANIM_RUN_LEFT] : &g_pData->m_aAnimations[ANIM_RUN_RIGHT], RunTime, 1.0f);
 	else if(!WantOtherDir)
 		State.Add(&g_pData->m_aAnimations[ANIM_WALK], WalkTime, 1.0f);
@@ -468,7 +468,7 @@ void CPlayers::RenderPlayer(
 		if(!(RenderInfo.m_TeeRenderFlags & TEE_NO_WEAPON))
 		{
 			// check if tee is being active before AFK
-			bool IsActive = !m_pClient->m_aClients[ClientID].m_Afk || LastAttackTime < m_pClient->m_aTuning[g_Config.m_ClDummy].GetWeaponFireDelay(Player.m_Weapon) || !g_Config.m_ClShowAfkState;
+			bool IsActive = !m_pClient->m_aClients[ClientID].m_Afk || LastAttackTime < m_pClient->m_aTuning[g_Config.m_ClDummy].GetWeaponFireDelay(Player.m_Weapon);
 
 			Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 			if(IsActive)

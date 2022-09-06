@@ -329,9 +329,6 @@ MACRO_CONFIG_COL(ClBackgroundEntitiesColor, cl_background_entities_color, 128, C
 MACRO_CONFIG_STR(ClBackgroundEntities, cl_background_entities, 100, "", CFGFLAG_CLIENT | CFGFLAG_SAVE, "Background (entities)")
 MACRO_CONFIG_STR(ClRunOnJoin, cl_run_on_join, 100, "", CFGFLAG_CLIENT | CFGFLAG_SAVE | CFGFLAG_INSENSITIVE, "Command to run when joining a server")
 
-MACRO_CONFIG_INT(ClShowAfkState, cl_show_afk_state, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show tees sitting down when AFK")
-MACRO_CONFIG_INT(ClShowRunState, cl_show_run_state, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show tees running when they're fast enough")
-
 // menu background map
 MACRO_CONFIG_STR(ClMenuMap, cl_menu_map, 100, "auto", CFGFLAG_CLIENT | CFGFLAG_SAVE, "Background map in the menu")
 MACRO_CONFIG_INT(ClRotationRadius, cl_rotation_radius, 30, 1, 500, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Menu camera rotation radius")
