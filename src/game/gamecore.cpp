@@ -7,7 +7,6 @@
 #include "teamscore.h"
 
 #include <engine/shared/config.h>
-#include <game/client/gameclient.h>
 
 const char *CTuningParams::ms_apNames[] =
 	{
