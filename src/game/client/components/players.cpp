@@ -410,7 +410,7 @@ void CPlayers::RenderPlayer(
 
 	RenderInfo.m_GotAirJump = Player.m_Jumped & 2 ? 0 : 1;
 
-	bool Stationary = Player.m_VelX <= 1 && Player.m_VelX >= -1;
+	bool Stationary = absolute(Player.m_VelX) <= 1;
 	bool InAir = !Collision()->CheckPoint(Player.m_X, Player.m_Y + 16);
 	bool Running = absolute(Player.m_VelX) >= 5000;
 	bool WantOtherDir = (Player.m_Direction == -1 && Vel.x > 0) || (Player.m_Direction == 1 && Vel.x < 0);
@@ -437,10 +437,13 @@ void CPlayers::RenderPlayer(
 		else
 			State.Add(&g_pData->m_aAnimations[ANIM_IDLE], 0, 1.0f); // TODO: some sort of time here
 	}
-	else if(Running)
-		State.Add(Player.m_VelX < 0 ? &g_pData->m_aAnimations[ANIM_RUN_LEFT] : &g_pData->m_aAnimations[ANIM_RUN_RIGHT], RunTime, 1.0f);
 	else if(!WantOtherDir)
-		State.Add(&g_pData->m_aAnimations[ANIM_WALK], WalkTime, 1.0f);
+	{
+		if(Running)
+			State.Add(Player.m_VelX < 0 ? &g_pData->m_aAnimations[ANIM_RUN_LEFT] : &g_pData->m_aAnimations[ANIM_RUN_RIGHT], RunTime, 1.0f);
+		else
+			State.Add(&g_pData->m_aAnimations[ANIM_WALK], WalkTime, 1.0f);
+	}
 
 	if(Player.m_Weapon == WEAPON_HAMMER)
 		State.Add(&g_pData->m_aAnimations[ANIM_HAMMER_SWING], clamp(LastAttackTime * 5.0f, 0.0f, 1.0f), 1.0f);
