@@ -49,7 +49,9 @@ void CCountdowns::RenderPlayerBars(const int ClientID)
 
 	// Freeze Bar
 	bool ShowFreezeBar = true;
-	if(Character.m_FreezeEnd <= 0.0f || Character.m_FreezeStart == 0 || Character.m_FreezeEnd <= Character.m_FreezeStart || !m_pClient->m_Snap.m_aCharacters[ClientID].m_HasExtendedDisplayInfo || (Character.m_IsInFreeze && g_Config.m_ClFreezeBarsAlphaInsideFreeze == 0))
+	if(Character.m_FreezeEnd <= 0.0f || Character.m_FreezeStart == 0 || Character.m_FreezeEnd <= Character.m_FreezeStart ||
+		!m_pClient->m_Snap.m_aCharacters[ClientID].m_HasExtendedDisplayInfo ||
+		(Character.m_IsInFreeze && g_Config.m_ClFreezeBarsAlphaInsideFreeze == 0) || (!Character.m_IsInFreeze && g_Config.m_ClFreezeBarsAlphaOutsideFreeze == 0))
 	{
 		ShowFreezeBar = false;
 	}
@@ -69,10 +71,10 @@ void CCountdowns::RenderPlayerBars(const int ClientID)
 			Position.x -= 32;
 			Position.y += 26;
 
-			float Alpha = m_pClient->IsOtherTeam(ClientID) ? g_Config.m_ClShowOthersAlpha / 100.0f : 1.0f;
-			if(Character.m_IsInFreeze)
+			float Alpha = (Character.m_IsInFreeze ? g_Config.m_ClFreezeBarsAlphaInsideFreeze : g_Config.m_ClFreezeBarsAlphaOutsideFreeze) / 100.0f;
+			if(m_pClient->IsOtherTeam(ClientID))
 			{
-				Alpha *= g_Config.m_ClFreezeBarsAlphaInsideFreeze / 100.0f;
+				Alpha *= g_Config.m_ClShowOthersAlpha / 100.0f;
 			}
 
 			RenderFreezeBarAtPos(&Position, FreezeProgress, Alpha);

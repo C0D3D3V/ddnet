@@ -2624,13 +2624,15 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		{
 			g_Config.m_ClShowStateChangeCountdown = g_Config.m_ClShowStateChangeCountdown == 1 ? 0 : 1;
 		}
-
+		Section.HSplitTop(2 * LineSize, &Button, &Section);
+		if(g_Config.m_ClShowStateChangeCountdown == 1)
 		{
-			Section.HSplitTop(2 * LineSize, &Button, &Section);
-			if(g_Config.m_ClShowStateChangeCountdown == 1)
-			{
-				UI()->DoScrollbarOption(&g_Config.m_ClFreezeBarsAlphaInsideFreeze, &g_Config.m_ClFreezeBarsAlphaInsideFreeze, &Button, Localize("Opacity of freeze bars inside freeze"), 0, 100, &CUI::ms_LinearScrollbarScale, CUI::SCROLLBAR_OPTION_MULTILINE, "%");
-			}
+			UI()->DoScrollbarOption(&g_Config.m_ClFreezeBarsAlphaInsideFreeze, &g_Config.m_ClFreezeBarsAlphaInsideFreeze, &Button, Localize("Opacity of freeze bars inside freeze"), 0, 100, &CUI::ms_LinearScrollbarScale, CUI::SCROLLBAR_OPTION_MULTILINE, "%");
+		}
+		Section.HSplitTop(2 * LineSize, &Button, &Section);
+		if(g_Config.m_ClShowStateChangeCountdown == 1)
+		{
+			UI()->DoScrollbarOption(&g_Config.m_ClFreezeBarsAlphaOutsideFreeze, &g_Config.m_ClFreezeBarsAlphaOutsideFreeze, &Button, Localize("Opacity of freeze bars outside freeze"), 0, 100, &CUI::ms_LinearScrollbarScale, CUI::SCROLLBAR_OPTION_MULTILINE, "%");
 		}
 	}
 	else if(s_CurTab == APPEARANCE_TAB_CHAT)
